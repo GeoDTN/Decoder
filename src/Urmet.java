@@ -1,17 +1,39 @@
 import biz.movia.utils.ByteUtil;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class Urmet {
 
+    private static final int ID_DATE = 7;
+    private static final int ID_TIME = 8;
+    private static final int ID_CALLED_PARTY_NUMBER = 12;
+
     public String date;
     public String time;
+    public String calledPartyNumber;
 
     static private String bcdCharsString = "0123456789 .-#*!";
     static private char[] bcdChars = bcdCharsString.toCharArray();
 
 
-    public Urmet decode(byte[] dataBytes) throws InvalidData {
+    public static Urmet decode(byte[] dataBytes) throws InvalidData {
+
+        Urmet urmet = new Urmet();
+
+        for(int offset = 0; offset < dataBytes.length;) {
+            offset += urmet.decodeBlock(Arrays.copyOfRange(dataBytes, offset, dataBytes.length));
+        }
+
+        return urmet;
+    }
+
+    // returns the block length
+    public int decodeBlock(byte[] dataBytes) throws InvalidData {
+
 
         int[] data = ByteUtil.toUnsignedInt(dataBytes);
 
@@ -54,26 +76,43 @@ public class Urmet {
 
         byte[] content = Arrays.copyOfRange(dataBytes, headerLength, headerLength+length);
 
+        processContent(extendedVocabulary, id, content);
 
-        return processContent(extendedVocabulary, id, content);
-
+        return headerLength+length;
     }
 
-    private Urmet processContent(boolean extended, int id, byte[] content) {
+    private void processContent(boolean extended, int id, byte[] content) {
         if ( ! extended )
-            return processBasicContent(id, content);
+            processBasicContent(id, content);
         else
-            return processExtendedContent(id, content);
+            processExtendedContent(id, content);
     }
 
-    private Urmet processExtendedContent(int id, byte[] content) {
-       return null;
+    private void  processExtendedContent(int id, byte[] content) {
     }
 
-    private Urmet processBasicContent(int id, byte[] content) {
+    private void processBasicContent(int id, byte[] content) {
 
 
-        return null;
+        if (id == ID_DATE)
+            processDate(content);
+        else if(id == ID_TIME)
+            processTime(content);
+        else if (id == ID_CALLED_PARTY_NUMBER)
+            processCalledPartyNumber(content);
+
+    }
+
+    private void processCalledPartyNumber(byte[] content) {
+        this.calledPartyNumber = decodeBCD(content);
+    }
+
+    private void processTime(byte[] content) {
+        this.time = decodeBCD(content);
+    }
+
+    private void processDate(byte[] content) {
+        this.date = decodeBCD(content);
     }
 
 
@@ -92,5 +131,29 @@ public class Urmet {
             stringBuilder.append( bcdChars[ b & 0x0f ] );
         }
         return stringBuilder.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Urmet{" +
+                "date='" + date + '\'' + '\n' +
+                ", time='" + time + '\'' + '\n' +
+                ", calledPartyNumber " + calledPartyNumber + '\n' +
+                '}';
+    }
+
+    public static void main(String[] args) throws IOException{
+        for(String file : args) {
+
+            System.out.println("Decoding "+file);
+            try {
+                Urmet urmet = Urmet.decode(Files.readAllBytes(Paths.get(file)));
+                System.out.println(urmet);
+            } catch (InvalidData invalidData) {
+                invalidData.printStackTrace();
+            }
+            System.out.println();
+
+        }
     }
 }
