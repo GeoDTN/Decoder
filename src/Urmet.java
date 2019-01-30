@@ -1,7 +1,7 @@
-import biz.movia.utils.ByteUtil;
-
-import java.io.FileInputStream;
+import utils.ByteUtil;
+//import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -11,10 +11,33 @@ public class Urmet {
     private static final int ID_DATE = 7;
     private static final int ID_TIME = 8;
     private static final int ID_CALLED_PARTY_NUMBER = 12;
+    private static final int ID_CALLING_PARTY_NUMBER = 11;
+    private static final int ID_CONNECTED_PARTY_NUMBER = 13;
+    private static final int ID_SELECTED_NUMBER = 17;
+    private static final int ID_CALL_DIRECTION = 18;
+    private static final int ID_LOAD_BEARING_SERVICE = 19;
+    private static final int ID_ADDITIONAL_SERVICE = 20;
+    private static final int ID_ADDITIONAL_SERVICE_OPERATION = 21;
+    private static final int ID_CALL_RESULT = 22;
+    private static final int ID_SHORT_MESSAGE = 23;
+    private static final int ID_USER_To_USER_MESSAGE = 24;
+
+
 
     public String date;
     public String time;
     public String calledPartyNumber;
+    public String callingPartyNumber;
+    public String connectedPartyNumber;
+    public String selectedNumber;
+    public int callDirection;
+    public String loadBearingService;
+    public String additionalService;
+    public String additionalServiceOperation;
+    public String callResult;
+    public String shortMessage;
+    public String userToUserMessage;
+
 
     static private String bcdCharsString = "0123456789 .-#*!";
     static private char[] bcdChars = bcdCharsString.toCharArray();
@@ -89,6 +112,10 @@ public class Urmet {
     }
 
     private void  processExtendedContent(int id, byte[] content) {
+
+
+
+
     }
 
     private void processBasicContent(int id, byte[] content) {
@@ -100,29 +127,77 @@ public class Urmet {
             processTime(content);
         else if (id == ID_CALLED_PARTY_NUMBER)
             processCalledPartyNumber(content);
+        else if (id == ID_CALLING_PARTY_NUMBER)
+            processCallingPartyNumber(content);
+        else if (id == ID_CONNECTED_PARTY_NUMBER)
+            processConnectedPartyNumber(content);
+        else if (id == ID_SELECTED_NUMBER)
+            processSelectedNumber(content);
+        else if (id == ID_CALL_DIRECTION)
+            processCallDirection(content);
+        else if (id == ID_LOAD_BEARING_SERVICE)
+            processLoadBearingService(content);
+        else if (id == ID_ADDITIONAL_SERVICE)
+            processAdditionalService(content);
+        else if (id == ID_ADDITIONAL_SERVICE_OPERATION)
+            processAdditionalServiceOperation(content);
+        else if (id == ID_CALL_RESULT)
+            processCallResult(content);
+        else if (id == ID_SHORT_MESSAGE)
+            processShortMessage(content);
+        else if (id == ID_USER_To_USER_MESSAGE)
+            processUserToUserMessage(content);
+
 
     }
 
-    private void processCalledPartyNumber(byte[] content) {
-        this.calledPartyNumber = decodeBCD(content);
-    }
 
-    private void processTime(byte[] content) {
-        this.time = decodeBCD(content);
-    }
 
     private void processDate(byte[] content) {
         this.date = decodeBCD(content);
     }
+    private void processTime(byte[] content) {
+        this.time = decodeBCD(content);
+    }
+    private void processCalledPartyNumber(byte[] content) {
+        this.calledPartyNumber = decodeBCD(content);
+    }
+    private void processCallingPartyNumber(byte[] content) {
+        this.callingPartyNumber = decodeBCD(content);
+    }
 
-
+    private void processConnectedPartyNumber(byte[] content) {
+        this.connectedPartyNumber = decodeBCD(content);
+    }
+    private void processSelectedNumber(byte[] content) {
+        this.selectedNumber = decodeBCD(content);
+    }
+    private void processCallDirection(byte[] content) {
+        this.callDirection = Byte.toUnsignedInt(content[0]);
+    }
+    private void processLoadBearingService(byte[] content) {
+        this.loadBearingService = decodeBCD(content);
+    }
+    private void processAdditionalService(byte[] content) {
+        this.additionalService = decodeBCD(content);
+    }
+    private void processAdditionalServiceOperation(byte[] content) {
+        this.additionalServiceOperation = decodeBCD(content);
+    }
+    private void processCallResult(byte[] content) {
+        this.callResult = decodeBCD(content);
+    }
+    private void processShortMessage(byte[] content) {
+        this.shortMessage = new String(content, StandardCharsets.US_ASCII);
+    }
+    private void processUserToUserMessage(byte[] content) {
+        this.userToUserMessage = new String(content, StandardCharsets.US_ASCII);
+    }
     public class InvalidData extends Exception {
         public InvalidData(String message) {
             super(message);
         }
     }
-
-
     String decodeBCD(byte[] data) {
         StringBuilder stringBuilder = new StringBuilder();
         for (byte bb : data) {
@@ -138,7 +213,17 @@ public class Urmet {
         return "Urmet{" +
                 "date='" + date + '\'' + '\n' +
                 ", time='" + time + '\'' + '\n' +
-                ", calledPartyNumber " + calledPartyNumber + '\n' +
+                ", calledPartyNumber =" + calledPartyNumber + '\n' +
+                ", callingPartyNumber =" + callingPartyNumber + '\n' +
+                ", connectedPartyNumber =" + connectedPartyNumber + '\n' +
+                ", selectedNumber  =" + selectedNumber+ '\n' +
+                ", callDirection   =" + callDirection+ '\n' +
+                ", loadBearingService =" + loadBearingService+ '\n' +
+                ", additionalService =" + additionalService+ '\n' +
+                ", additionalServiceOperation =" + additionalServiceOperation+ '\n' +
+                ", callResult =" + callResult+ '\n' +
+                ", shortMessage =" + shortMessage+ '\n' +
+                ", userToUserMessage =" + userToUserMessage+ '\n' +
                 '}';
     }
 

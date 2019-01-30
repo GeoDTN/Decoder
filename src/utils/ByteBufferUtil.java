@@ -1,4 +1,4 @@
-package biz.movia.utils;
+package utils;
 
 import java.nio.ByteBuffer;
 

@@ -1,4 +1,4 @@
-package biz.movia.utils;
+package utils;
 
 public class ArrayUtils {
 
